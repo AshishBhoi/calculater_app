@@ -1,40 +1,24 @@
-name: Dart CI
+workflow "build and test app" {
+  on = "push"
+  resolves = ["build apk", "run tests"]
+}
 
-on: [push]
+# Install dependencies
+action "install dependencies" {
+  uses = "steebchen/flutter@master"
+  args = "pub get"
+}
 
-jobs:
-  build:
+# test app
+action "run tests" {
+  needs = "install dependencies"
+  uses = "steebchen/flutter@master"
+  args = "test"
+}
 
-    runs-on: ubuntu-latest
-    
-    container:
-      image:  google/dart:latest
-    
-   steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-java@v1
-      with:
-        java-version: '12.x'
-    - uses: subosito/flutter-action@v1
-      with:
-        channel: 'stable'
-    - run: flutter pub get
-    - run: flutter build apk
-
-  build:
-
-      runs-on: macos-latest
-
-      container:
-        image:  google/dart:latest
-
-     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '12.x'
-      - uses: subosito/flutter-action@v1
-        with:
-          channel: 'stable'
-      - run: flutter pub get
-      - run: flutter build ios
+# Build APK
+action "build apk" {
+  needs = "install dependencies"
+  uses  = "steebchen/flutter@master"
+  args  = "build apk --release"
+}
